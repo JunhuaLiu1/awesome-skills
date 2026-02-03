@@ -1,0 +1,3 @@
+display_name: Git 提交助手
+short_description: 自动生成中文提交信息并执行 git commit
+default_prompt: 扫描当前仓库的 git 变更（优先 staged），生成中文 Conventional Commit message（feat/fix/docs 等）并执行 git commit；必要时先确认是否 git add -A。
