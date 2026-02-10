@@ -1,22 +1,120 @@
 # awesome-skills
 
-Collection of AI programming skills and prompts.
+一个 **可复用的 AI Skills（技能）集合** —— 用结构化、强约束、可执行的工作流，指导大模型在真实工程与设计场景中产出 **高质量、非模板化** 的结果。
 
-## Skills
+与常见的 prompt 仓库不同，这里的每一个 Skill 都明确规定了：
 
-- [spec-plan](./skills/spec-plan/SKILL.md) - Spec-first development guidance
-- [frontend-design](./skills/frontend-design/SKILL.md) - Production-grade frontend interfaces
+> **什么时候用、怎么用、必须产出什么、必须遵守哪些约束**
 
-## Usage
+目标是让 AI 的输出 **稳定、可评审、可落地**，而不是随机发挥。
 
-Load skills using the `skill` tool with the skill name:
+---
+
+## ✨ 什么是 Skill？
+
+在本仓库中，**Skill ≠ Prompt**。
+
+一个 Skill 是一套 **可重复执行的 AI 工作规程（Workflow / SOP）**，通常包含：
+
+- 适用场景（什么时候必须使用该 Skill）
+- 明确的规则与约束（防止模型发散）
+- 定义清晰的产出物（文件、结构、代码、提交方式等）
+- 面向真实工作的质量标准，而不是“能回答就行”
+
+你可以把 Skill 理解为：  
+**“可以信任的大模型工作流程”**。
+
+---
+
+## 📦 已有 Skills
+
+### 1. spec-plan
+**Spec-first / Spec-driven 开发工作流**
+
+📍 路径：`skills/spec-plan/SKILL.md`
+
+适用场景：
+- 需求不清晰、复杂或存在较高风险
+- 希望在写代码前先完成可评审的方案收敛
+- 需要一个明确边界、可实施、可验收的 Spec 文档
+
+核心特性：
+- **只产出一个 Spec 文件**
+- 强制结构化提问与歧义收敛
+- 明确 Goals / Non-goals，防止范围膨胀
+- Spec 统一落盘到 `docs/specs/`，并且只允许一次提交
+
+该 Skill 的目标不是“快写代码”，而是 **在最低成本下做出正确决策**。
+
+---
+
+### 2. frontend-design
+**高质量、非 AI 模板化的前端设计与实现**
+
+📍 路径：`skills/frontend-design/SKILL.md`
+
+适用场景：
+- 构建网页、组件、应用或前端界面
+- 对视觉质量和设计表达有要求
+- 希望避免“看起来一眼就是 AI 做的 UI”
+
+核心特性：
+- 强制先确定设计方向（目的 / 风格 / 差异化）
+- 对字体、配色、布局、动效有明确审美原则
+- 刻意规避通用模板与常见 AI 审美套路
+- 直接生成 **可运行、可交付的前端代码**
+
+该 Skill 关注的是：  
+**设计是否有明确立场，而不是是否“好看但平庸”**。
+
+---
+
+### 3. git-commit-auto
+**自动生成中文提交信息并完成提交**
+
+📍 路径：`skills/git-commit-auto/SKILL.md`
+
+适用场景：
+- 需要生成符合 Conventional Commit 的中文提交信息
+- 希望在提交前自动检查暂存区/工作区差异
+- 想减少手动整理 commit message 的成本
+
+核心特性：
+- 自动扫描 staged/unstaged 变更并给出提交建议
+- 依据改动类型推断 `feat/fix/docs/refactor/test/chore` 等前缀
+- 提交前展示变更概览，避免“盲提交”
+
+该 Skill 的目标是：  
+**让提交信息清晰一致，并降低提交操作的出错率**。
+
+---
+
+### 4. git-worktree-flow
+**基于 Git worktree 的隔离分支工作流**
+
+📍 路径：`skills/git-worktree-flow/SKILL.md`
+
+适用场景：
+- 需要在独立目录/分支中并行开发
+- 希望在实现过程中持续小步提交
+- 完成后再决定是否合并回主分支并清理 worktree
+
+核心特性：
+- 自动创建 worktree 与独立分支，避免污染主工作区
+- 强制“实现 → 验证 → 提交”的节奏
+- 完成后提供合并/清理选项并强调安全确认
+
+该 Skill 的目标是：  
+**用可控、可回滚的方式完成一段独立需求**。
+
+---
+
+## 🚀 使用方式
+
+通过支持 Skill 的 AI 工具，按名称加载对应 Skill：
 
 ```json
 {
   "name": "spec-plan"
 }
 ```
-
-## License
-
-MIT
