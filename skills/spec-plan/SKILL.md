@@ -1,6 +1,6 @@
 ---
 name: spec-plan
-description: "当用户希望进行 Spec 驱动开发（Spec-first / Spec-driven development）时，你 MUST 使用此 Skill：先把需求与约束收敛为一份可实施、可评审的 Spec，再进入实现。该 Skill 最终只生成 1 个 Spec 文件写入 /docs/specs/，并进行 1 次 git commit（仅提交该 Spec）。本 Skill 不写实现代码。"
+description: "当用户希望进行 Spec 驱动开发（Spec-first / Spec-driven development）时，你 MUST 使用此 Skill：先把需求与约束收敛为一份可实施、可评审的 Spec，再进入实现。该 Skill 最终只生成 1 个 Spec 文件写入 /docs/specs/，并在用户确认后进行 1 次 git commit（仅提交该 Spec）。本 Skill 不写实现代码。"
 ---
 
 # Spec-Plan Workflow (Spec-driven)
@@ -8,13 +8,14 @@ description: "当用户希望进行 Spec 驱动开发（Spec-first / Spec-driven
 ## 输出物（强制）
 - 仅一个文件：`docs/specs/spec{n}_<slug>.md`
 - 仅一次提交：只提交该 spec（不生成 design、不额外 commit）
+- Spec 必须先落盘，再进行 review；review 后如有修改，更新同一个文件，直到用户确认后再提交
 
 ---
 
 ## 0) 建立仓库上下文（必须做）
 在提问前先快速扫一遍（减少无效问题）：
 - 目录：`README*`, `docs/`, `src/`, `packages/`, `configs/`
-- 是否已有 `docs/specs/` 与命名规则/模版
+- 是否已有 `docs/specs/` 与命名规则/模板
 - `git log -n 20 --oneline` 了解近期方向与约束
 - 基本约定：API 风格/配置方式/CI 门槛（知道“怎么跑”即可）
 
@@ -95,10 +96,37 @@ description: "当用户希望进行 Spec 驱动开发（Spec-first / Spec-driven
 - 规则：小写；空格/连字符→`_`；去特殊字符；合并连续 `_`
 - 中文主题：优先简短英文/拼音；否则用语义清晰英文兜底
 
+### 写入规则
+- 先创建/更新 Spec 文件到 `docs/specs/`
+- 此时只写入 working tree，不执行 `git add` 或 `git commit`
+- 写入完成后，进入 Review 阶段
+
 ---
 
-## 5) 唯一一次提交（强制）
-完成并确认 spec 后：
+## 5) Review & 修改
+在 Spec 写入后，必须询问用户：
+
+> Spec 已生成到文件中，是否有需要更正的地方？
+
+### 规则
+- 在用户明确确认前，**禁止 commit**
+- 如果用户提出修改：
+  - 更新同一个 Spec 文件（不新建文件）
+  - 更新后再次询问：
+    > 是否还有需要更正的地方？
+- 可以进行多轮修改，但始终只维护这一个 Spec 文件
+- 不允许跳过 review 或默认用户同意
+- 每次修改后，都要再次等待用户确认，确认无误后才进入提交步骤
+
+---
+
+## 6) 唯一一次提交（强制）
+仅在用户明确表示以下任一情况时，才允许提交：
+- “没有问题”
+- “可以提交”
+- “直接 commit”
+
+执行：
 1) `git status --porcelain` 确认变更
 2) `git add docs/specs/spec{n}_<slug>.md`
 3) `git commit -m "docs: add spec{n} <slug>"`（若仓库有规范则遵循）
@@ -109,4 +137,4 @@ description: "当用户希望进行 Spec 驱动开发（Spec-first / Spec-driven
 - Top 3 Open Questions（如有）
 
 结束语（必须）：
-**“Spec 已生成并一次性提交。Ready to set up for implementation?”**
+**“Spec 已生成并在确认后一次性提交。Ready to set up for implementation?”**
