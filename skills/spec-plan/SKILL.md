@@ -66,6 +66,19 @@ description: "当用户希望进行 Spec 驱动开发（Spec-first / Spec-driven
 - 可发布：上线/迁移/回滚/兼容策略
 - 不确定项：正文标 `TBD`，末尾 `Open Questions` 汇总
 
+### ⚠️ 写作与输出行为约束（新增，关键修复）
+- ❗ **禁止在对话中输出完整 Spec 内容或草稿**
+- ❗ **禁止在写入文件前展示 Spec**
+- ✅ 当信息足够时，必须：
+  1. 直接生成完整 Spec
+  2. **立即写入 `docs/specs/spec{n}_<slug>.md`**
+  3. 然后进入 Review 阶段
+- 对话中只允许提供：
+  - 文件路径
+  - 标题
+  - 简要摘要（3-5 行）
+- 用户的 review 应基于文件，而不是聊天内容
+
 ### Spec 结构（精简版）
 1. Background（痛点与现状）
 2. Goals / Non-goals（防止范围膨胀）
