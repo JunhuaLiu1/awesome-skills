@@ -1,6 +1,6 @@
 ---
 name: git-worktree-flow
-description: 用 Git worktree 创建隔离工作区并在独立分支上迭代提交；当用户提到 worktree、git worktree、GitWorkTree、工作树、隔离分支、临时工作区，或希望“先创建 worktree 再实现需求、过程中持续 commit、完成后询问是否合并并清理 worktree”时使用。
+description: 用 Git worktree 创建隔离工作区并在独立分支上迭代提交；当用户提到 worktree、git worktree、GitWorkTree、工作树、隔离分支、临时工作区，或希望"先创建 worktree 再实现需求、过程中持续 commit、完成后询问是否合并并清理 worktree"时使用。
 ---
 
 # Git worktree 工作流（中文为主）
@@ -24,18 +24,25 @@ description: 用 Git worktree 创建隔离工作区并在独立分支上迭代�
 ### 1) 创建 worktree（必须先做）
 
 1. 确认当前目录在 Git 仓库内：`git rev-parse --show-toplevel`
-2. 如当前工作区有未提交修改，优先先提交或 stash；不建议直接创建 worktree 然后把“脏状态”带过去。
-3. 定位本 Skill 的脚本目录：
-   - `skill_dir` = 本 `SKILL.md` 所在目录
-   - 脚本路径：`<skill_dir>/scripts/worktree_create.py`、`<skill_dir>/scripts/worktree_finish.py`
-4. 运行创建脚本（推荐）：
+2. 如当前工作区有未提交修改，优先先提交或 stash；不建议直接创建 worktree 然后把"脏状态"带过去。
+3. 确认 base 分支（优先 `origin/HEAD` 指向的默认分支，否则用 `main` / `master`，再否则用当前分支）。
+4. 用 `git worktree add` 创建 worktree：
 
-   - 自动生成分支名 + worktree 路径：
-     - `python3 <skill_dir>/scripts/worktree_create.py --slug "<本次需求简短代号>"`
+   - 自动生成分支名 + worktree 路径（推荐）：
+     ```bash
+     branch="wt/$(date +%Y%m%d-%H%M)-<slug>"
+     path=".worktrees/wt-$(date +%Y%m%d-%H%M)-<slug>"
+     git worktree add -b "$branch" "$path" <base>
+     ```
    - 显式指定 base / branch / path：
-     - `python3 <skill_dir>/scripts/worktree_create.py --base main --branch wt/20260203-fix-player --path .worktrees/wt-20260203-fix-player`
+     ```bash
+     git worktree add -b wt/20260203-fix-player .worktrees/wt-20260203-fix-player main
+     ```
 
-脚本会输出 worktree 路径与分支名，并在 Git common dir 里保存本次会话的 state，供后续合并/清理使用。
+5. 将 worktree 目录加入 `info/exclude`（避免污染 `git status`）：
+   ```bash
+   echo ".worktrees/" >> $(git rev-parse --git-common-dir)/info/exclude
+   ```
 
 ### 2) 在 worktree 中完成需求（并持续提交）
 
@@ -44,7 +51,7 @@ description: 用 Git worktree 创建隔离工作区并在独立分支上迭代�
 3. **持续提交（强制习惯）**：
    - 每个可验证的小步提交一次；提交前先运行最相关的验证命令（例如 `go test ./...` / `npm run lint` / 目标用例）。
    - 典型节奏：改动 → 验证 → `git add -A` → `git commit -m "fix: ..."` → 下一步。
-   - 若用户明确要求整理提交历史，再考虑最后 squash；否则优先保留“可回滚的小步提交”。
+   - 若用户明确要求整理提交历史，再考虑最后 squash；否则优先保留"可回滚的小步提交"。
 
 ### 3) 完成后询问：是否合并回主分支 + 是否清理
 
@@ -56,11 +63,31 @@ description: 用 Git worktree 创建隔离工作区并在独立分支上迭代�
 
 若用户选择 A 或 B：
 
-1. 在**主工作区**（不是 worktree）执行合并（推荐用脚本，避免遗漏）：
-   - 预览将执行的动作（不做实际修改）：
-     - `python3 <skill_dir>/scripts/worktree_finish.py`
-   - 真正执行（会合并；若带 `--cleanup` 则会移除 worktree，并尝试 `git branch -d`）：
-     - `python3 <skill_dir>/scripts/worktree_finish.py --yes --merge --cleanup`
+1. 在**主工作区**（不是 worktree）执行合并：
+   - 切换回主工作区并切到 base 分支：
+     ```bash
+     cd <主仓库目录>
+     git checkout <base>
+     ```
+   - 合并 worktree 分支：
+     ```bash
+     git merge --no-ff --no-edit <worktree分支名>
+     ```
+   - 切换回原分支（可选）：
+     ```bash
+     git checkout -
+     ```
+
+若用户选择 A（合并 + 清理）：
+
+1. 删除 worktree（保留分支）：
+   ```bash
+   git worktree remove <worktree路径>
+   ```
+2. 删除已合并的分支：
+   ```bash
+   git branch -d <worktree分支名>
+   ```
 
 若用户选择 C：
 
@@ -70,10 +97,10 @@ description: 用 Git worktree 创建隔离工作区并在独立分支上迭代�
 
 - **合并与删除属于高风险动作**：必须在执行前再次确认用户选择，并说明会执行哪些命令。
 - **不要 `-D` 强删分支**；除非用户明确同意，并且你已解释风险。
-- 如果合并/删除失败，停止自动化流程，输出“可复制粘贴”的手工恢复/处理步骤。
+- 如果合并/删除失败，停止自动化流程，输出"可复制粘贴"的手工恢复/处理步骤。
 
 ## 常见问题
 
-- worktree 目录出现在 `git status`：脚本会写入 `$(git rev-parse --git-common-dir)/info/exclude` 来忽略 `.worktrees/`。
+- worktree 目录出现在 `git status`：将 `.worktrees/` 加入 `$(git rev-parse --git-common-dir)/info/exclude` 以忽略。
 - `worktree add` 提示分支已存在：用 `--branch` 指向已有分支，或先清理旧 worktree。
 - 合并冲突：停止并提示用户；在主工作区解决冲突、提交，再继续 cleanup。
